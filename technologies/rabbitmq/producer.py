@@ -7,6 +7,8 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from pika import BlockingConnection, BasicProperties, ConnectionParameters
 
+from .common import RabbitMQMixin
+
 
 def send_msg_example(queue: str, message: str):
     """Пример отправки сообщения в очередь
@@ -38,51 +40,35 @@ def send_msg_example(queue: str, message: str):
 
 
 # Ниже пример на приложении:
-# Сервер принимает запросы и отправляет адрес клиента в очередь RabbitMQ
-class RequestHandler(BaseHTTPRequestHandler):
-    """Обработчик HTTP-запроса"""
+class HTTPRequestHandler(BaseHTTPRequestHandler):
+    """Обработчик HTTP-запроса.
+    Использует метод send_to_rabbit миксина сервера для отправки сообщения в очередь.
+    """
 
     def do_GET(self):
         """На GET-запрос возвращаем текущее время и отправляем в очередь адрес клиента"""
         self.send_response(200)
         self.end_headers()
         now = datetime.now().isoformat(timespec='seconds').encode()
-        self.wfile.write(b'<h1>This request time: %s</h1>' % now)
-        self.send_to_rabbit()
-
-    def send_to_rabbit(self):
-        """Отправляем в очередь сообщение о совершенном на сервер запросе"""
-        self.server.rabbit.basic_publish(
-            exchange='',
-            routing_key=self.server.queue,
-            body=self.address_string(),
-            properties=BasicProperties(delivery_mode=2)
-        )
+        self.wfile.write(b'<h1>This request\'s time: %s</h1>' % now)
+        self.server.send_to_rabbit(self.address_string())
 
 
-class AppServer(HTTPServer):
+class AppServer(HTTPServer, RabbitMQMixin):
     """Сервер, имитирующий реальное приложение"""
 
-    queue = 'app_log'
-
     def __init__(self, host, port):
-        self.rabbit = self.connect_to_rabbit()
-        super().__init__((host, port), RequestHandler)
-
-    def connect_to_rabbit(self):
-        """Подключаемся в RabbitMQ и создаём очередь"""
-        connection = BlockingConnection(ConnectionParameters('localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue=self.queue, durable=True)
-        return channel
+        super().__init__((host, port), HTTPRequestHandler)
+        RabbitMQMixin.__init__(self)
 
     def run(self):
         host, port = self.server_address[:2]
-        print(f"Serving HTTP on {host} port {port}\n")
         try:
+            print(f'[AppServer] Serving HTTP on {host} port {port}\n')
             self.serve_forever()
         except KeyboardInterrupt:
-            print('Shutting down the server...')
+            print('[AppServer] Shutting down...')
+        finally:
             self.rabbit.close()
             self.server_close()
 
