@@ -1,13 +1,8 @@
 """
-Hello-world пример для работы с RabbitMQ.
+'Hello world' пример для работы с RabbitMQ.
 Consumer - подписчик на сообщения.
 """
-from logging import Logger, StreamHandler
-from sys import stdout
-
 from pika import BlockingConnection, ConnectionParameters
-
-from .common import RabbitMQMixin
 
 
 def receive_msg_example(queue: str):
@@ -60,33 +55,5 @@ def receive_msg_example(queue: str):
         exit(0)
 
 
-# Ниже пример на приложении:
-class LogService(RabbitMQMixin):
-    """Сервис, имитирующий подписчика на сообщения"""
-
-    def __init__(self):
-        self.log = Logger(self.__class__.__name__)
-        handler = StreamHandler(stdout)
-        handler.setLevel(10)
-        self.log.addHandler(handler)
-
-        RabbitMQMixin.__init__(self)
-        self.consume_from_rabbit(self.on_message)
-
-    def on_message(self, ch, method, properties, body):
-        """Функция для обработки сообщения из очереди RabbitMQ"""
-        msg = f'[LogService] [{method.routing_key}] GET request from {body.decode()} '
-        self.log.info(msg)
-
-    def run(self):
-        try:
-            print('[LogService] Service started')
-            self.rabbit.start_consuming()
-        finally:
-            print('[LogService] Shutting down...')
-            self.rabbit.stop_consuming()
-            exit(0)
-
-
 if __name__ == '__main__':
-    LogService().run()
+    receive_msg_example('test')
