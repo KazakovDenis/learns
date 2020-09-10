@@ -1,37 +1,35 @@
+from typing import Callable, Union
+
 from pika import BlockingConnection, ConnectionParameters, BasicProperties
-
-
-QUEUE = 'app_log'
+from pika.adapters.blocking_connection import BlockingChannel
 
 
 class RabbitMQMixin:
     """Миксин для работы с очередью RabbitMQ"""
 
-    def __init__(self):
-        self.rabbit = self.connect_to_rabbit()
+    rabbit: BlockingChannel
 
     @staticmethod
-    def connect_to_rabbit(queue=QUEUE):
+    def connect_to_rabbit():
         """Подключаемся к RabbitMQ и создаём очередь"""
-        connection = BlockingConnection(ConnectionParameters('localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue=queue, durable=True)
-        return channel
+        connection = BlockingConnection(ConnectionParameters())
+        return connection.channel()
 
-    def send_to_rabbit(self, message, queue=QUEUE):
+    def send_to_rabbit(self, message: Union[str, bytes], exchange: str = '', queue: str = ''):
         """Отправляем сообщение в очередь
 
         :param message: тело сообщения
-        :param queue: название очереди
+        :param queue: ключ маршрутизации
+        :param exchange: название обменника
         """
         self.rabbit.basic_publish(
-            exchange='',
+            exchange=exchange,
             routing_key=queue,
             body=message,
-            properties=BasicProperties(delivery_mode=2)
+            properties=BasicProperties(delivery_mode=2),
         )
 
-    def consume_from_rabbit(self, callback, queue=QUEUE):
+    def consume_from_rabbit(self, callback: Callable, queue: str = ''):
         """Подписываемся на сообщения очереди
 
         :param callback: функция для обработки сообщения
