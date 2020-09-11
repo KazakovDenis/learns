@@ -1,3 +1,6 @@
+"""
+Модуль с общей логикой работы с RabbitMQ
+"""
 from typing import Callable, Union
 
 from pika import BlockingConnection, ConnectionParameters, BasicProperties

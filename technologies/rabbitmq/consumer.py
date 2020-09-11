@@ -51,6 +51,7 @@ def receive_msg_example(queue: str):
         # запускаем мониторинг очереди
         channel.start_consuming()
     except KeyboardInterrupt:
+        print('Shutting down')
         channel.stop_consuming()
         exit(0)
 
