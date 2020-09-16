@@ -29,6 +29,6 @@
 - [ ] Снимок (Memento)
 - [ ] Наблюдатель (Observer)
 - [ ] Состояние (State)
-- [ ] Стратегия (Strategy)
+- [x] Стратегия (Strategy)
 - [ ] Шаблонный метод (Template method)
 - [ ] Посетитель (Visitor)
