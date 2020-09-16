@@ -6,7 +6,7 @@
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-from .common import RabbitMQMixin
+from .common import RabbitMQMixin, EXCHANGE, EX_TYPE
 
 
 class HTTPRequestHandler(BaseHTTPRequestHandler):
@@ -23,19 +23,20 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b'<h1>This request\'s time: %s</h1>' % now)
 
         msg = '%s %s' % (self.address_string(), self.path)
-        queue = 'app.index' if self.path == '/' else 'app.other'
-        self.server.send_to_rabbit(msg, self.server.exchange, queue)
+        # key = 'app.index' if self.path == '/' else 'app.other'
+        if 'favicon.ico' not in self.path:
+            self.server.send_to_rabbit(msg, self.server.xch_name, 'index')
 
 
 class AppServer(HTTPServer, RabbitMQMixin):
     """Сервер, имитирующий реальное приложение"""
 
-    exchange = 'app'
+    xch_name = EXCHANGE
+    xch_type = EX_TYPE
 
     def __init__(self, host, port):
         super().__init__((host, port), HTTPRequestHandler)
-        self.rabbit = self.connect_to_rabbit()
-        self.rabbit.exchange_declare(self.exchange, exchange_type='topic')
+        self.rabbit = self.connect_to_rabbit(self.xch_name, self.xch_type)
 
     def run(self):
         host, port = self.server_address[:2]
