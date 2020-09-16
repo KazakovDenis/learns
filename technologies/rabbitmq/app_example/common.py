@@ -8,7 +8,7 @@ from pika.adapters.blocking_connection import BlockingChannel
 
 
 EXCHANGE = 'app'
-EX_TYPE = 'direct'
+EX_TYPE = 'topic'
 
 
 class RabbitMQMixin:

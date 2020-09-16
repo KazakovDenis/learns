@@ -23,9 +23,9 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b'<h1>This request\'s time: %s</h1>' % now)
 
         msg = '%s %s' % (self.address_string(), self.path)
-        # key = 'app.index' if self.path == '/' else 'app.other'
+        key = 'app.index' if self.path == '/' else 'app.other'
         if 'favicon.ico' not in self.path:
-            self.server.send_to_rabbit(msg, self.server.xch_name, 'index')
+            self.server.send_to_rabbit(msg, self.server.xch_name, key)
 
 
 class AppServer(HTTPServer, RabbitMQMixin):

@@ -11,14 +11,12 @@ from .common import RabbitMQMixin, EXCHANGE, EX_TYPE
 class LogService(Thread, RabbitMQMixin):
     """Сервис, имитирующий подписчика на сообщения"""
 
-    instances = 0
     xch_name = EXCHANGE
     xch_type = EX_TYPE
 
     def __init__(self, rabbit_key: str):
         Thread.__init__(self, daemon=True)
-        LogService.instances += 1
-        self.number = LogService.instances
+        self.rabbit_key = rabbit_key
         self.log = self.get_logger()
 
         self.rabbit = self.connect_to_rabbit(self.xch_name, self.xch_type)
@@ -35,26 +33,26 @@ class LogService(Thread, RabbitMQMixin):
     def on_message(self, ch, method, properties, body):
         """Метод для обработки сообщения из очереди RabbitMQ"""
         remote, path = body.decode().split()
-        msg = f'[{self}] [{method.routing_key}] GET request "{path}" from {remote} '
+        msg = f'{self} GET request from {remote} to "{path}"'
         self.log.info(msg)
 
     def run(self):
         """Запускает 'прослушку' очереди"""
-        print(f'[{self}] Service started')
+        print(f'{self} Service started')
         self.rabbit.start_consuming()
 
     def __str__(self):
-        return f'LogService-{self.number}'
+        return f'<LogService [{self.rabbit_key}]>'.ljust(25)
 
 
 def run_many(*routing_keys):
     """Запускает несколько экземпляров LogService"""
     threads = [LogService(key) for key in routing_keys]
-    event = Event()
 
     for thread in threads:
         thread.start()
 
+    event = Event()
     try:
         event.wait()
     except KeyboardInterrupt:
@@ -65,5 +63,5 @@ if __name__ == '__main__':
     run_many(
         'app.index',     # забирает логи только главной страницы
         'app.other',     # забирает логи остальных страниц
-        'index',         # забирает логи всех страниц
+        'app.*',         # забирает логи всех страниц
     )
