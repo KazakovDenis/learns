@@ -6,7 +6,7 @@
 
 ## Группы паттернов   
 ### Порождающие (Creational)  
-- [ ]  Фабричный метод (Factory method)
+- [x]  Фабричный метод (Factory method)
 - [ ]  Абстрактная фабрика (Abstract factory)
 - [ ]  Строитель (Builder)
 - [ ]  Прототип (Prototype)

@@ -21,10 +21,9 @@ from abc import ABC, abstractmethod
 from random import randint
 
 
-# Базовые классы, описывающие схему работы паттерна
+# Базовые сущности, описывающие схему работы паттерна
 class ThirdPartyService(ABC):
     """Сторонний сервис, интерфейс которого не подходит клиентскому приложению"""
-    pass
 
 
 class Adapter(ABC):
