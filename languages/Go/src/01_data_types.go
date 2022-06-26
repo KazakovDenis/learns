@@ -5,12 +5,15 @@ package main
 
 import "fmt"
 
-// Длинное объявление
+// Длинное объявление глобальных переменных
+// Глобальные доступны во всём пакете
 var str1 string
 var str2 string = "string2"
 
-// untyped float const
-const pi = 3.14159
+// Pi - untyped float const
+// Экспортируемые сущности начинаются с заглавной буквы
+// Экспортируемые == к которым можно обратиться из других пакетов
+const Pi = 3.14159
 
 const (
 	// typed const
@@ -24,11 +27,11 @@ func main() {
 	println(str1)
 
 	// Константы
-	println("pi", pi, "flag", flag, "name", name, "fullName", fullName)
+	println("pi", Pi, "flag", flag, "name", name, "fullName", fullName)
 	var (
 		// нетипизированные константы могут быть присвоены переменным других типов
-		a float32 = pi
-		b float64 = pi
+		a float32 = Pi
+		b float64 = Pi
 	)
 	println("a", a, "b", b)
 
@@ -36,7 +39,7 @@ func main() {
 	var text = "text"
 	println(text)
 
-	// Краткая нотация
+	// Краткая нотация (не применимо к глобальным переменным)
 	integer := 10
 	fmt.Printf("Type of %d is %T\n", integer, integer)
 
