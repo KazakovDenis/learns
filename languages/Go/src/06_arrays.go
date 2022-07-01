@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 )
 
 func checkSlice(s []string) {
@@ -84,4 +85,18 @@ func main() {
 	funcSlice := make([]string, 3, 5)
 	checkSlice(funcSlice)
 	fmt.Println("Slice after func", funcSlice)
+
+	// Копирование слайсов происходит по размеру наименьшего
+	dest := make([]int, 3)
+	src := []int{1, 2, 3, 4, 5}
+	copy(dest, src)
+	fmt.Println("Copy:", dest, src)
+
+	// Сравнение
+	s1 := []int{1, 2, 3}
+	s2 := []int{1, 2, 4}
+	s3 := []int{1, 2, 3}
+
+	fmt.Println(reflect.DeepEqual(s1, s2)) // false
+	fmt.Println(reflect.DeepEqual(s1, s3)) // true
 }
